@@ -39,38 +39,6 @@ jobs:
       - checkout
       - run: sudo yarn global add gally
       - run: ga promote $CIRCLE_BRANCH
-  test-node-v10:
-    docker:
-      - image: 'circleci/node:10'
-    steps:
-      - checkout
-      - run:
-          command: |
-            # sync submodules as checkout doesn't do this automatically
-            if [[ $(git config --file .gitmodules --get-regexp path) ]]; then
-              git submodule sync && git submodule update --init
-            fi
-      - run:
-          command: |
-            if [[ -n "${NPM_TOKEN}" ]]; then
-              echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-            fi
-      - restore_cache:
-          name: Restore Yarn Package Cache
-          keys:
-            - 'yarn-packages-{{ checksum "yarn.lock" }}'
-      - run:
-          name: Install Dependencies
-          command: yarn install --frozen-lockfile
-      - save_cache:
-          name: Save Yarn Package Cache
-          key: 'yarn-packages-{{ checksum "yarn.lock" }}'
-          paths:
-            - ~/.cache/yarn
-      - run: yarn test
-      - run: >-
-          (git add . && git diff-index --quiet HEAD --) || (git status && exit
-          1);
   release:
     docker:
       - image: 'circleci/node:12'
@@ -159,6 +127,38 @@ jobs:
   test-node-v14:
     docker:
       - image: 'circleci/node:14'
+    steps:
+      - checkout
+      - run:
+          command: |
+            # sync submodules as checkout doesn't do this automatically
+            if [[ $(git config --file .gitmodules --get-regexp path) ]]; then
+              git submodule sync && git submodule update --init
+            fi
+      - run:
+          command: |
+            if [[ -n "${NPM_TOKEN}" ]]; then
+              echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+            fi
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - 'yarn-packages-{{ checksum "yarn.lock" }}'
+      - run:
+          name: Install Dependencies
+          command: yarn install --frozen-lockfile
+      - save_cache:
+          name: Save Yarn Package Cache
+          key: 'yarn-packages-{{ checksum "yarn.lock" }}'
+          paths:
+            - ~/.cache/yarn
+      - run: yarn test
+      - run: >-
+          (git add . && git diff-index --quiet HEAD --) || (git status && exit
+          1);
+  test-node-v10:
+    docker:
+      - image: 'circleci/node:10'
     steps:
       - checkout
       - run:
